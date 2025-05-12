@@ -56,3 +56,14 @@ func TestUnpackErrInternal(t *testing.T) {
 		})
 	}
 }
+
+func TestIsValidStr(t *testing.T) {
+	invalidStrings := []string{"3abc", "45", "aaa10b", "ab१c"}
+	for _, tc := range invalidStrings {
+		tc := tc
+		t.Run(tc, func(t *testing.T) {
+			err := checkString(tc)
+			require.Truef(t, errors.Is(err, ErrInvalidString) || errors.Is(err, ErrInternal), "actual error %q", err)
+		})
+	}
+}
