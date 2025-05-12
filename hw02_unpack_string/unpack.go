@@ -8,6 +8,7 @@ import (
 )
 
 var ErrInvalidString = errors.New("invalid string")
+
 var ErrInternal = errors.New("internal error")
 
 func checkString(s string) error {
