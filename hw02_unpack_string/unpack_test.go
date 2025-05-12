@@ -16,6 +16,8 @@ func TestUnpack(t *testing.T) {
 		{input: "abccd", expected: "abccd"},
 		{input: "", expected: ""},
 		{input: "aaa0b", expected: "aab"},
+		{input: "aaab0", expected: "aaa"},
+		{input: " aaa", expected: " aaa"},
 		// uncomment if task with asterisk completed
 		// {input: `qwe\4\5`, expected: `qwe45`},
 		// {input: `qwe\45`, expected: `qwe44444`},
@@ -40,6 +42,28 @@ func TestUnpackInvalidString(t *testing.T) {
 		t.Run(tc, func(t *testing.T) {
 			_, err := Unpack(tc)
 			require.Truef(t, errors.Is(err, ErrInvalidString), "actual error %q", err)
+		})
+	}
+}
+
+func TestUnpackErrInternal(t *testing.T) {
+	invalidStrings := []string{"ab१c"}
+	for _, tc := range invalidStrings {
+		tc := tc
+		t.Run(tc, func(t *testing.T) {
+			_, err := Unpack(tc)
+			require.Truef(t, errors.Is(err, ErrInternal), "actual error %q", err)
+		})
+	}
+}
+
+func TestIsValidStr(t *testing.T) {
+	invalidStrings := []string{"3abc", "45", "aaa10b", "ab१c"}
+	for _, tc := range invalidStrings {
+		tc := tc
+		t.Run(tc, func(t *testing.T) {
+			err := checkString(tc)
+			require.Truef(t, errors.Is(err, ErrInvalidString) || errors.Is(err, ErrInternal), "actual error %q", err)
 		})
 	}
 }
