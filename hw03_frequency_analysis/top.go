@@ -10,7 +10,7 @@ type wordCount struct {
 	Count int
 }
 
-// создать мапу word -> count
+// создать мапу word -> count.
 func countWordFrequencies(text string) map[string]int {
 	frequencyMap := make(map[string]int)
 	words := strings.Fields(text)
@@ -20,9 +20,9 @@ func countWordFrequencies(text string) map[string]int {
 	return frequencyMap
 }
 
-// отсортировать мапу word -> count по count && word и вернуть word []string
+// отсортировать мапу word -> count по count && word и вернуть word []string.
 func sortWordFrequencies(frequencyMap map[string]int) []string {
-	var frequency []wordCount
+	frequency := make([]wordCount, 0, len(frequencyMap))
 	for word, count := range frequencyMap {
 		frequency = append(frequency, wordCount{Word: word, Count: count})
 	}
@@ -32,7 +32,7 @@ func sortWordFrequencies(frequencyMap map[string]int) []string {
 		}
 		return frequency[i].Word < frequency[j].Word
 	})
-	var result []string
+	result := make([]string, 0, len(frequency))
 	for _, word := range frequency {
 		result = append(result, word.Word)
 	}
