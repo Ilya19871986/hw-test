@@ -80,3 +80,30 @@ func TestTop10(t *testing.T) {
 		}
 	})
 }
+
+var text2 = "aa cc bb aa"
+
+func TestCountWordFrequencies(t *testing.T) {
+	t.Run("number of elements", func(t *testing.T) {
+		require.Len(t, countWordFrequencies(text2), 3)
+	})
+	expected := map[string]int{
+		"aa": 2,
+		"cc": 1,
+		"bb": 1,
+	}
+	t.Run("equals elements", func(t *testing.T) {
+		require.Equal(t, expected, countWordFrequencies(text2))
+	})
+}
+
+func TestSortWordFrequencies(t *testing.T) {
+	expected := []string{
+		"aa",
+		"bb",
+		"cc",
+	}
+	t.Run("sort elements", func(t *testing.T) {
+		require.Equal(t, expected, sortWordFrequencies(countWordFrequencies(text2)))
+	})
+}

@@ -1,4 +1,4 @@
-module github.com/Ilya19871986/hw03_frequency_analysis
+module github.com/Ilya19871986/hw-test
 
 go 1.19
 
