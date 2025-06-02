@@ -1,4 +1,4 @@
-module github.com/Ilya19871986/hw02_unpack_string
+module github.com/Ilya19871986/hw-test
 
 go 1.19
 

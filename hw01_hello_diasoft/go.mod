@@ -1,4 +1,4 @@
-module github.com/Ilya19871986/hw01_hello_diasoft
+module github.com/Ilya19871986/hw-test
 
 go 1.18
 
