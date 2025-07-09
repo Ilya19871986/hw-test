@@ -1,6 +1,6 @@
 package hw04lrucache
 
-// List - интерфейс для двусвязного списка
+// List - интерфейс для двусвязного списка.
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -11,7 +11,7 @@ type List interface {
 	MoveToFront(i *ListItem)
 }
 
-// ListItem - структура элемента списка
+// ListItem - структура элемента списка.
 type ListItem struct {
 	Value interface{}
 	Next  *ListItem
