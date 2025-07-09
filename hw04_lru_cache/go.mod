@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw04_lru_cache
+module github.com/Ilya19871986/hw-test
 
 go 1.19
 
