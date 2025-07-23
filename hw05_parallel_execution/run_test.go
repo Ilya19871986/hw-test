@@ -15,6 +15,13 @@ import (
 func TestRun(t *testing.T) {
 	defer goleak.VerifyNone(t)
 
+	t.Run("Illegal arguments", func(t *testing.T) {
+		tasks := make([]Task, 0, 1)
+		require.True(t, errors.Is(Run(tasks, 0, 23), ErrorsIllegalArgument))
+		require.True(t, errors.Is(Run(tasks, 10, 0), ErrorsIllegalArgument))
+		require.True(t, errors.Is(Run(nil, 10, 23), ErrorsIllegalArgument))
+	})
+
 	t.Run("if were errors in first M tasks, than finished not more N+M tasks", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
