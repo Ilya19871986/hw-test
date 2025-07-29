@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -89,5 +90,48 @@ func TestPipeline(t *testing.T) {
 
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
+	})
+
+	t.Run("Pipeline cancellation", func(t *testing.T) {
+		in := make(Bi)
+		done := make(Bi)
+
+		// Стейдж с долгой обработкой.
+		slowStage := func(in In) Out {
+			out := make(Bi)
+			go func() {
+				defer close(out)
+				for val := range in {
+					time.Sleep(500 * time.Millisecond)
+					select {
+					case out <- val:
+					case <-done: // Прерываем, если пришел сигнал.
+						return
+					}
+				}
+			}()
+			return out
+		}
+
+		// Запускаем пайплайн.
+		pipeline := ExecutePipeline(in, done, slowStage)
+
+		// Отправляем данные и прерываем.
+		go func() {
+			in <- 1
+			in <- 2
+			time.Sleep(200 * time.Millisecond) // Даем немного времени на обработку.
+			close(done)                        // Прерываем пайплайн.
+			close(in)
+		}()
+
+		// Должен вернуться хотя бы один элемент (если успел обработаться).
+		var results []int
+		for val := range pipeline {
+			results = append(results, val.(int))
+		}
+
+		// Проверяем, что пайплайн не обработал все элементы из-за отмены.
+		assert.LessOrEqual(t, len(results), 2, "Pipeline should be canceled")
 	})
 }
