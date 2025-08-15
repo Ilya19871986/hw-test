@@ -2,11 +2,7 @@ package main
 
 import (
 	"flag"
-)
-
-var (
-	from, to      string
-	limit, offset int64
+	"fmt"
 )
 
 func init() {
@@ -18,5 +14,18 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+	err := Copy(from, to, offset, limit)
+	if err != nil {
+		switch err {
+		case ErrIllegalArgument:
+			panic(ErrIllegalArgument)
+		case ErrUnsupportedFile:
+			panic(ErrUnsupportedFile)
+		case ErrOffsetExceedsFileSize:
+			panic(ErrUnsupportedFile)
+		default:
+			panic(err)
+		}
+	}
+	fmt.Println("Copy completed successfully")
 }
