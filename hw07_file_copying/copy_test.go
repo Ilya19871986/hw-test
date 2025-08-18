@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"testing"
 )
@@ -34,6 +35,7 @@ func TestCopy(t *testing.T) {
 			offset:   0,
 			limit:    0,
 			wantErr:  false,
+			errValue: nil,
 		},
 		{
 			name:     "successful copy offset=0 limit=10",
@@ -43,6 +45,7 @@ func TestCopy(t *testing.T) {
 			offset:   0,
 			limit:    10,
 			wantErr:  false,
+			errValue: nil,
 		},
 		{
 			name:     "successful copy offset=0 limit=1000",
@@ -52,6 +55,7 @@ func TestCopy(t *testing.T) {
 			offset:   0,
 			limit:    1000,
 			wantErr:  false,
+			errValue: nil,
 		},
 		{
 			name:     "successful copy offset=0 limit=10000",
@@ -61,6 +65,7 @@ func TestCopy(t *testing.T) {
 			offset:   0,
 			limit:    10000,
 			wantErr:  false,
+			errValue: nil,
 		},
 		{
 			name:     "successful copy offset=100 limit=1000",
@@ -70,6 +75,7 @@ func TestCopy(t *testing.T) {
 			offset:   100,
 			limit:    1000,
 			wantErr:  false,
+			errValue: nil,
 		},
 		{
 			name:     "successful copy offset=6000 limit=1000",
@@ -79,6 +85,7 @@ func TestCopy(t *testing.T) {
 			offset:   6000,
 			limit:    1000,
 			wantErr:  false,
+			errValue: nil,
 		},
 	}
 
@@ -90,7 +97,7 @@ func TestCopy(t *testing.T) {
 				t.Errorf("Copy() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if tt.wantErr && err != tt.errValue {
+			if tt.wantErr && !errors.Is(err, tt.errValue) {
 				t.Errorf("Expected error %v, got %v", tt.errValue, err)
 			}
 

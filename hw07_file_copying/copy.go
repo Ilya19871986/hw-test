@@ -92,7 +92,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	dstFile, err := os.Create(toPath)
 	if err != nil {
-		return fmt.Errorf("seek failed: %w", err)
+		return fmt.Errorf("failed to create destination file: %w", err)
 	}
 	defer dstFile.Close()
 
