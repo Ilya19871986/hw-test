@@ -16,16 +16,8 @@ func main() {
 	flag.Parse()
 	err := Copy(from, to, offset, limit)
 	if err != nil {
-		switch err {
-		case ErrIllegalArgument:
-			panic(ErrIllegalArgument)
-		case ErrUnsupportedFile:
-			panic(ErrUnsupportedFile)
-		case ErrOffsetExceedsFileSize:
-			panic(ErrUnsupportedFile)
-		default:
-			panic(err)
-		}
+		fmt.Println("Copy error")
+	} else {
+		fmt.Println("Copy completed successfully")
 	}
-	fmt.Println("Copy completed successfully")
 }
