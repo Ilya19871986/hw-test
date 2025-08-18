@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"os"
 )
 
 func init() {
@@ -14,10 +16,18 @@ func init() {
 
 func main() {
 	flag.Parse()
-	err := Copy(from, to, offset, limit)
-	if err != nil {
-		fmt.Println("Copy error")
-	} else {
-		fmt.Println("Copy completed successfully")
+	if err := Copy(from, to, offset, limit); err != nil {
+		switch {
+		case errors.Is(err, ErrIllegalArgument):
+			fmt.Printf("Invalid arguments: %v\n", err)
+		case errors.Is(err, ErrUnsupportedFile):
+			fmt.Printf("Unsupported file: %v\n", err)
+		case errors.Is(err, ErrOffsetExceedsFileSize):
+			fmt.Printf("Offset error: %v\n", err)
+		default:
+			fmt.Printf("Copy failed: %v\n", err)
+		}
+		os.Exit(1)
 	}
+	fmt.Println("Copy completed successfully")
 }
