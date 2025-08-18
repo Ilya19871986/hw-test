@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 
@@ -100,8 +99,8 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	reader := bar.NewProxyReader(srcFile)
 	if _, err = io.CopyN(dstFile, reader, limit); err != nil {
-		if err != io.EOF {
-			return fmt.Errorf("copy error: %w", err)
+		if errors.Is(err, io.EOF) {
+			return nil
 		}
 	}
 
