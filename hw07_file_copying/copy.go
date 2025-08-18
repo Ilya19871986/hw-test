@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -60,37 +61,38 @@ func setupProgressBar(limit int64) *pb.ProgressBar {
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err := validateInput(fromPath, toPath); err != nil {
-		return err
+		return fmt.Errorf("input validation failed: %w", err)
 	}
 
 	srcFile, err := os.Open(fromPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open source file: %w", err)
 	}
 	defer srcFile.Close()
 
 	fileInfo, err := getFileInfo(srcFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get file info: %w", err)
 	}
 
 	if err := validateFile(fileInfo); err != nil {
-		return err
+		return fmt.Errorf("file validation failed: %w", err)
 	}
 
 	if offset > fileInfo.Size() {
-		return ErrOffsetExceedsFileSize
+		return fmt.Errorf("%w: offset %d exceeds file size %d",
+			ErrOffsetExceedsFileSize, offset, fileInfo.Size())
 	}
 
 	limit = calculateLimit(fileInfo.Size(), offset, limit)
 
 	if _, err = srcFile.Seek(offset, io.SeekStart); err != nil {
-		return err
+		return fmt.Errorf("seek failed: %w", err)
 	}
 
 	dstFile, err := os.Create(toPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("seek failed: %w", err)
 	}
 	defer dstFile.Close()
 
@@ -102,6 +104,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		if errors.Is(err, io.EOF) {
 			return nil
 		}
+		return fmt.Errorf("copy failed: %w", err)
 	}
 
 	return nil
