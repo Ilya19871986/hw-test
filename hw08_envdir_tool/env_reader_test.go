@@ -33,7 +33,7 @@ func TestReadDir(t *testing.T) {
 			}
 			file.Close()
 		} else {
-			err := os.WriteFile(path, []byte(tc.content), 0644)
+			err := os.WriteFile(path, []byte(tc.content), 0o644)
 			if err != nil {
 				t.Fatalf("Failed to write test file: %v", err)
 			}
@@ -68,7 +68,7 @@ func TestReadDir(t *testing.T) {
 	}
 
 	invalidFile := filepath.Join(tmpDir, "INVALID=NAME")
-	err = os.WriteFile(invalidFile, []byte("value"), 0644)
+	err = os.WriteFile(invalidFile, []byte("value"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to create invalid file: %v", err)
 	}
