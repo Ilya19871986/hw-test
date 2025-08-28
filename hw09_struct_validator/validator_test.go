@@ -69,7 +69,7 @@ func TestValidate(t *testing.T) {
 			expectedErr: ValidationErrors{
 				{Field: "ID", Err: fmt.Errorf("%w: expected length 36, got 5", ErrLength)},
 				{Field: "Age", Err: fmt.Errorf("%w: value 16 is less than minimum 18", ErrMin)},
-				{Field: "Email", Err: fmt.Errorf("%w: value 'invalid-email' doesn't match pattern '^\\w+@\\w+\\.\\w+$'", ErrRegexp)},
+				{Field: "Email", Err: fmt.Errorf("%w: value 'invalid-email' doesn't match pattern '^\\w+@\\w+\\.\\w+$'", ErrRegexp)}, //nolint:all
 				{Field: "Role", Err: fmt.Errorf("%w: value 'guest' not in allowed values: admin,stuff", ErrIn)},
 				{Field: "Phones[1]", Err: fmt.Errorf("%w: expected length 11, got 10", ErrLength)},
 			},

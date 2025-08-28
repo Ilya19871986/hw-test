@@ -106,6 +106,8 @@ func validateField(fieldName string, fieldValue reflect.Value, validateTag strin
 			err = validateString(fieldValue.String(), validator, param)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			err = validateInt(fieldValue.Int(), validator, param)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			err = validateUint(fieldValue.Uint(), validator, param)
 		case reflect.Float32, reflect.Float64:
 			err = validateFloat(fieldValue.Float(), validator, param)
 		case reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func,
@@ -199,6 +201,46 @@ func validateInt(value int64, validator, param string) error {
 		}
 	default:
 		return fmt.Errorf("unknown int validator: %s", validator)
+	}
+	return nil
+}
+
+func validateUint(value uint64, validator, param string) error {
+	switch validator {
+	case "min":
+		min, err := strconv.ParseUint(param, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid min parameter: %w", err)
+		}
+		if value < min {
+			return fmt.Errorf("%w: value %d is less than minimum %d", ErrMin, value, min)
+		}
+	case "max":
+		max, err := strconv.ParseUint(param, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid max parameter: %w", err)
+		}
+		if value > max {
+			return fmt.Errorf("%w: value %d is greater than maximum %d", ErrMax, value, max)
+		}
+	case "in":
+		allowedValues := strings.Split(param, ",")
+		found := false
+		for _, allowedStr := range allowedValues {
+			allowed, err := strconv.ParseUint(allowedStr, 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid in parameter: %w", err)
+			}
+			if value == allowed {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("%w: value %d not in allowed values: %s", ErrIn, value, param)
+		}
+	default:
+		return fmt.Errorf("unknown uint validator: %s", validator)
 	}
 	return nil
 }
