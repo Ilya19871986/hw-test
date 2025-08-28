@@ -37,6 +37,7 @@ type (
 	}
 )
 
+//nolint:funlen
 func TestValidate(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -151,6 +152,7 @@ func TestValidate(t *testing.T) {
 
 			err := Validate(tt.in)
 
+			// Ожидается отсутствие ошибки.
 			if tt.expectedErr == nil {
 				if err != nil {
 					t.Errorf("Ожидалось отсутствие ошибки, получено: %v", err)
@@ -158,14 +160,17 @@ func TestValidate(t *testing.T) {
 				return
 			}
 
+			// Ожидается наличие ошибки.
 			if err == nil {
 				t.Error("Ожидалась ошибка, получено nil")
 				return
 			}
 
+			// Проверка для не-ValidationErrors (например, "input must be a struct").
 			if expectedErr, ok := tt.expectedErr.(error); ok {
 				var validationErrors ValidationErrors
 				if !errors.As(err, &validationErrors) {
+					// Это простая ошибка, сравниваем сообщения.
 					if err.Error() != expectedErr.Error() {
 						t.Errorf("Ожидалась ошибка %v, получено %v", expectedErr, err)
 					}
@@ -173,30 +178,35 @@ func TestValidate(t *testing.T) {
 				}
 			}
 
-			expectedErrors, ok := tt.expectedErr.(ValidationErrors)
-			if !ok {
+			// Проверка для ValidationErrors.
+			var expectedErrors ValidationErrors
+			if !errors.As(tt.expectedErr, &expectedErrors) {
 				t.Errorf("Неверный тестовый случай: expectedErr должен быть ValidationErrors или error")
 				return
 			}
 
-			actualErrors, ok := err.(ValidationErrors)
-			if !ok {
+			var actualErrors ValidationErrors
+			if !errors.As(err, &actualErrors) {
 				t.Errorf("Ожидались ValidationErrors, получено %T: %v", err, err)
 				return
 			}
 
+			// Проверка количества ошибок.
 			if len(actualErrors) != len(expectedErrors) {
 				t.Errorf("Ожидалось %d ошибок, получено %d. Ошибки: %v", len(expectedErrors), len(actualErrors), actualErrors)
 				return
 			}
 
+			// Проверка каждой ошибки.
 			for j, expectedErr := range expectedErrors {
 				actualErr := actualErrors[j]
 
+				// Проверка имени поля.
 				if actualErr.Field != expectedErr.Field {
 					t.Errorf("Ошибка %d: ожидалось поле %s, получено %s", j, expectedErr.Field, actualErr.Field)
 				}
 
+				// Проверка сообщения об ошибке.
 				if actualErr.Err.Error() != expectedErr.Err.Error() {
 					t.Errorf("Ошибка %d: ожидалось сообщение '%s', получено '%s'", j, expectedErr.Err.Error(), actualErr.Err.Error())
 				}

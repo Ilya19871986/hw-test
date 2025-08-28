@@ -86,7 +86,6 @@ func Validate(v interface{}) error {
 	}
 	return nil
 }
-
 func validateField(fieldName string, fieldValue reflect.Value, validateTag string) ValidationErrors {
 	var errors ValidationErrors
 	rules := strings.Split(validateTag, "|")
@@ -108,7 +107,11 @@ func validateField(fieldName string, fieldValue reflect.Value, validateTag strin
 			err = validateInt(fieldValue.Int(), validator, param)
 		case reflect.Float32, reflect.Float64:
 			err = validateFloat(fieldValue.Float(), validator, param)
-		default:
+		case reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func,
+			reflect.Interface, reflect.Ptr, reflect.Struct, reflect.UnsafePointer,
+			reflect.Bool, reflect.Complex64, reflect.Complex128, reflect.Uintptr,
+			reflect.Invalid:
+			// Все неподдерживаемые типы обрабатываются здесь.
 			err = fmt.Errorf("unsupported field type: %s", fieldValue.Kind())
 		}
 
