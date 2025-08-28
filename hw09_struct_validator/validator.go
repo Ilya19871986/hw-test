@@ -27,6 +27,15 @@ var (
 	ErrUnsupportedType = errors.New("unsupported field type")
 )
 
+// Константы для валидаторов.
+const (
+	validatorLen    = "len"
+	validatorRegexp = "regexp"
+	validatorIn     = "in"
+	validatorMin    = "min"
+	validatorMax    = "max"
+)
+
 func (v ValidationErrors) Error() string {
 	if len(v) == 0 {
 		return "no validation errors"
@@ -131,7 +140,7 @@ func validateField(fieldName string, fieldValue reflect.Value, validateTag strin
 
 func validateString(value, validator, param string) error {
 	switch validator {
-	case "len":
+	case validatorLen:
 		expectedLen, err := strconv.Atoi(param)
 		if err != nil {
 			return fmt.Errorf("invalid length parameter: %w", err)
@@ -139,7 +148,7 @@ func validateString(value, validator, param string) error {
 		if len(value) != expectedLen {
 			return fmt.Errorf("%w: expected length %d, got %d", ErrLength, expectedLen, len(value))
 		}
-	case "regexp":
+	case validatorRegexp:
 		regex, err := regexp.Compile(param)
 		if err != nil {
 			return fmt.Errorf("invalid regex pattern: %w", err)
@@ -147,7 +156,7 @@ func validateString(value, validator, param string) error {
 		if !regex.MatchString(value) {
 			return fmt.Errorf("%w: value '%s' doesn't match pattern '%s'", ErrRegexp, value, param)
 		}
-	case "in":
+	case validatorIn:
 		allowedValues := strings.Split(param, ",")
 		found := false
 		for _, allowed := range allowedValues {
@@ -167,7 +176,7 @@ func validateString(value, validator, param string) error {
 
 func validateInt(value int64, validator, param string) error {
 	switch validator {
-	case "min":
+	case validatorMin:
 		min, err := strconv.ParseInt(param, 10, 64)
 		if err != nil {
 			return fmt.Errorf("invalid min parameter: %w", err)
@@ -175,7 +184,7 @@ func validateInt(value int64, validator, param string) error {
 		if value < min {
 			return fmt.Errorf("%w: value %d is less than minimum %d", ErrMin, value, min)
 		}
-	case "max":
+	case validatorMax:
 		max, err := strconv.ParseInt(param, 10, 64)
 		if err != nil {
 			return fmt.Errorf("invalid max parameter: %w", err)
@@ -183,7 +192,7 @@ func validateInt(value int64, validator, param string) error {
 		if value > max {
 			return fmt.Errorf("%w: value %d is greater than maximum %d", ErrMax, value, max)
 		}
-	case "in":
+	case validatorIn:
 		return validateInInt(value, param)
 	default:
 		return fmt.Errorf("unknown int validator: %s", validator)
@@ -193,7 +202,7 @@ func validateInt(value int64, validator, param string) error {
 
 func validateUint(value uint64, validator, param string) error {
 	switch validator {
-	case "min":
+	case validatorMin:
 		min, err := strconv.ParseUint(param, 10, 64)
 		if err != nil {
 			return fmt.Errorf("invalid min parameter: %w", err)
@@ -201,7 +210,7 @@ func validateUint(value uint64, validator, param string) error {
 		if value < min {
 			return fmt.Errorf("%w: value %d is less than minimum %d", ErrMin, value, min)
 		}
-	case "max":
+	case validatorMax:
 		max, err := strconv.ParseUint(param, 10, 64)
 		if err != nil {
 			return fmt.Errorf("invalid max parameter: %w", err)
@@ -209,7 +218,7 @@ func validateUint(value uint64, validator, param string) error {
 		if value > max {
 			return fmt.Errorf("%w: value %d is greater than maximum %d", ErrMax, value, max)
 		}
-	case "in":
+	case validatorIn:
 		return validateInUint(value, param)
 	default:
 		return fmt.Errorf("unknown uint validator: %s", validator)
@@ -259,7 +268,7 @@ func validateInUint(value uint64, param string) error {
 
 func validateFloat(value float64, validator, param string) error {
 	switch validator {
-	case "min":
+	case validatorMin:
 		min, err := strconv.ParseFloat(param, 64)
 		if err != nil {
 			return fmt.Errorf("invalid min parameter: %w", err)
@@ -267,7 +276,7 @@ func validateFloat(value float64, validator, param string) error {
 		if value < min {
 			return fmt.Errorf("%w: value %f is less than minimum %f", ErrMin, value, min)
 		}
-	case "max":
+	case validatorMax:
 		max, err := strconv.ParseFloat(param, 64)
 		if err != nil {
 			return fmt.Errorf("invalid max parameter: %w", err)
@@ -275,7 +284,7 @@ func validateFloat(value float64, validator, param string) error {
 		if value > max {
 			return fmt.Errorf("%w: value %f is greater than maximum %f", ErrMax, value, max)
 		}
-	case "in":
+	case validatorIn:
 		allowedValues := strings.Split(param, ",")
 		found := false
 		for _, allowedStr := range allowedValues {
