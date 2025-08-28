@@ -86,6 +86,7 @@ func Validate(v interface{}) error {
 	}
 	return nil
 }
+
 func validateField(fieldName string, fieldValue reflect.Value, validateTag string) ValidationErrors {
 	var errors ValidationErrors
 	rules := strings.Split(validateTag, "|")
