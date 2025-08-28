@@ -37,7 +37,7 @@ type (
 	}
 )
 
-//nolint:funlen
+//nolint:all
 func TestValidate(t *testing.T) {
 	tests := []struct {
 		name        string

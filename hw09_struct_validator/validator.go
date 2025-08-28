@@ -184,21 +184,7 @@ func validateInt(value int64, validator, param string) error {
 			return fmt.Errorf("%w: value %d is greater than maximum %d", ErrMax, value, max)
 		}
 	case "in":
-		allowedValues := strings.Split(param, ",")
-		found := false
-		for _, allowedStr := range allowedValues {
-			allowed, err := strconv.ParseInt(allowedStr, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid in parameter: %w", err)
-			}
-			if value == allowed {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("%w: value %d not in allowed values: %s", ErrIn, value, param)
-		}
+		return validateInInt(value, param)
 	default:
 		return fmt.Errorf("unknown int validator: %s", validator)
 	}
@@ -224,23 +210,49 @@ func validateUint(value uint64, validator, param string) error {
 			return fmt.Errorf("%w: value %d is greater than maximum %d", ErrMax, value, max)
 		}
 	case "in":
-		allowedValues := strings.Split(param, ",")
-		found := false
-		for _, allowedStr := range allowedValues {
-			allowed, err := strconv.ParseUint(allowedStr, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid in parameter: %w", err)
-			}
-			if value == allowed {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("%w: value %d not in allowed values: %s", ErrIn, value, param)
-		}
+		return validateInUint(value, param)
 	default:
 		return fmt.Errorf("unknown uint validator: %s", validator)
+	}
+	return nil
+}
+
+// Общая функция для валидации in для int64.
+func validateInInt(value int64, param string) error {
+	allowedValues := strings.Split(param, ",")
+	found := false
+	for _, allowedStr := range allowedValues {
+		allowed, err := strconv.ParseInt(allowedStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid in parameter: %w", err)
+		}
+		if value == allowed {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("%w: value %d not in allowed values: %s", ErrIn, value, param)
+	}
+	return nil
+}
+
+// Общая функция для валидации in для uint64.
+func validateInUint(value uint64, param string) error {
+	allowedValues := strings.Split(param, ",")
+	found := false
+	for _, allowedStr := range allowedValues {
+		allowed, err := strconv.ParseUint(allowedStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid in parameter: %w", err)
+		}
+		if value == allowed {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("%w: value %d not in allowed values: %s", ErrIn, value, param)
 	}
 	return nil
 }
