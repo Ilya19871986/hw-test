@@ -88,7 +88,7 @@ func (c *telnetClient) Receive() error {
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				fmt.Fprintf(os.Stderr, "...Connection was closed by peer\n")
 				return nil
 			}
