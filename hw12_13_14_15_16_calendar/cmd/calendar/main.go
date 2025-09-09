@@ -8,22 +8,28 @@ import (
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/app"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/config"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/logger"
-	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/server/http"
+	internalhttp "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/server/http"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage"
+	memory "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage/memory"
+	sql "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage/sql"
 )
 
-var configFile string
+var (
+	configFile  string
+	showVersion bool
+)
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config.yaml", "Path to configuration file")
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
 }
 
 func main() {
 	flag.Parse()
 
-	if flag.Arg(0) == "version" {
+	if showVersion {
 		printVersion()
-		return
+		os.Exit(0)
 	}
 
 	cfg, err := config.LoadConfig(configFile)
@@ -38,16 +44,16 @@ func main() {
 
 	var store storage.Storage
 	if cfg.Storage.Type == "sql" {
-		store, err = storage.NewSQLStorage(cfg.Storage.DSN)
+		store, err = sql.NewStorage(cfg.Storage.DSN)
 		if err != nil {
 			log.Fatalf("Failed to create SQL storage: %v", err)
 		}
 	} else {
-		store = storage.NewMemoryStorage()
+		store = memory.NewStorage()
 	}
 
 	calendarApp := app.New(logg, store)
-	httpServer := http.NewServer(cfg.Server.Host, cfg.Server.Port, calendarApp, logg)
+	httpServer := internalhttp.NewServer(cfg.Server.Host, cfg.Server.Port, calendarApp, logg)
 
 	logg.Info("Starting calendar service...")
 	if err := httpServer.Start(); err != nil {
