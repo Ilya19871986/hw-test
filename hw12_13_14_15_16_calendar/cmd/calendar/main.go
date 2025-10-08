@@ -1,61 +1,63 @@
 package main
 
 import (
-	"context"
 	"flag"
+	"log"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_16_calendar/internal/storage/memory"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/app"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/config"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/logger"
+	internalhttp "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/server/http"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage"
+	memory "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage/memory"
+	sql "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage/sql"
 )
 
-var configFile string
+var (
+	configFile  string
+	showVersion bool
+)
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config.yaml", "Path to configuration file")
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
 }
 
 func main() {
 	flag.Parse()
 
-	if flag.Arg(0) == "version" {
+	if showVersion {
 		printVersion()
-		return
+		os.Exit(0)
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	cfg, err := config.LoadConfig(configFile)
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	logg, err := logger.NewLogger(cfg.Logger.Level)
+	if err != nil {
+		log.Fatalf("Failed to create logger: %v", err)
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
-
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
-
-	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+	var store storage.Storage
+	if cfg.Storage.Type == "sql" {
+		store, err = sql.NewStorage(cfg.Storage.DSN)
+		if err != nil {
+			log.Fatalf("Failed to create SQL storage: %v", err)
 		}
-	}()
+	} else {
+		store = memory.NewStorage()
+	}
 
-	logg.Info("calendar is running...")
+	calendarApp := app.New(logg, store)
+	httpServer := internalhttp.NewServer(cfg.Server.Host, cfg.Server.Port, calendarApp, logg)
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	logg.Info("Starting calendar service...")
+	if err := httpServer.Start(); err != nil {
+		logg.Error("Failed to start server: " + err.Error())
+		os.Exit(1)
 	}
 }
