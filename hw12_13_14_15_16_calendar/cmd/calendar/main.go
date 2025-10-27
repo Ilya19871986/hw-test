@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/app"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/config"
@@ -46,18 +50,39 @@ func main() {
 	if cfg.Storage.Type == "sql" {
 		store, err = sql.NewStorage(cfg.Storage.DSN)
 		if err != nil {
-			log.Fatalf("Failed to create SQL storage: %v", err)
+			logg.Fatalf("Failed to create SQL storage: %v", err)
 		}
 	} else {
 		store = memory.NewStorage()
 	}
 
 	calendarApp := app.New(logg, store)
-	httpServer := internalhttp.NewServer(cfg.Server.Host, cfg.Server.Port, calendarApp, logg)
 
-	logg.Info("Starting calendar service...")
-	if err := httpServer.Start(); err != nil {
-		logg.Error("Failed to start server: " + err.Error())
-		os.Exit(1)
+	httpServer := internalhttp.NewServer(calendarApp, cfg.Server.Host, cfg.Server.Port)
+
+	// Запускаем сервер в горутине для graceful shutdown.
+	go func() {
+		logg.Info("Starting calendar service...")
+		if err := httpServer.Start(); err != nil {
+			logg.Error("Failed to start server: " + err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	// Ожидаем сигналы для graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	logg.Info("Shutting down server...")
+
+	// Graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := httpServer.Stop(ctx); err != nil {
+		logg.Error("Failed to stop server gracefully: " + err.Error())
 	}
+
+	logg.Info("Server stopped")
 }
