@@ -5,19 +5,25 @@ GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	@echo "Building calendar API..."
+	go build -o bin/calendar.exe ./cmd/calendar
+	@echo "Building calendar scheduler..."
+	go build -o bin/calendar_scheduler.exe ./cmd/scheduler
+	@echo "Building calendar storer..."
+	go build -o bin/calendar_storer.exe ./cmd/storer
+	@echo "Build complete! Executables are in bin/ directory"
 
-run: build
-	$(BIN) -config ./configs/config.yaml
+run-calendar:
+	./bin/calendar --config=configs/calendar.yaml
 
-build-img:
-	docker build \
-		--build-arg=LDFLAGS="$(LDFLAGS)" \
-		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
+run-scheduler:
+	./bin/calendar_scheduler --config=configs/scheduler.yaml
 
-run-img: build-img
-	docker run $(DOCKER_IMG)
+run-storer:
+	./bin/calendar_storer --config=configs/storer.yaml
+
+clean:
+	rm -rf bin/
 
 version: build
 	$(BIN) version
