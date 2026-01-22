@@ -53,6 +53,13 @@ test:
 	@echo "Running tests..."
 	@go test -race -v ./internal/...
 
+## lint: Run linter
+.PHONY: lint
+lint:
+	@echo "Running linter..."
+	@go vet ./...
+	@gofmt -l . | (! grep .)
+
 ## docker-build: Build Docker images
 .PHONY: docker-build
 docker-build:
