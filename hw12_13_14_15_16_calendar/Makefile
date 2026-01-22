@@ -86,3 +86,27 @@ docker-clean:
 	@echo "Cleaning Docker environment..."
 	@$(DOCKER_COMPOSE) down -v
 	@echo "Docker environment cleaned"
+
+## up: Start all services (alias for docker-up)
+.PHONY: up
+up: docker-up
+
+## down: Stop all services (alias for docker-down)
+.PHONY: down
+down: docker-down
+
+## integration-tests: Run integration tests
+.PHONY: integration-tests
+integration-tests:
+	@echo "Starting integration tests..."
+	@echo "Building and starting services..."
+	@$(DOCKER_COMPOSE) up -d --build
+	@echo "Waiting for services to be ready..."
+	@powershell -Command "Start-Sleep -Seconds 20"
+	@echo "Building integration tests..."
+	@docker build -f build/Dockerfile.integration -t calendar-integration-tests .
+	@echo "Running integration tests..."
+	@docker run --rm --network calendar-network calendar-integration-tests && echo "Tests passed!" || (echo "Tests failed!" && $(DOCKER_COMPOSE) down && exit 1)
+	@echo "Cleaning up..."
+	@$(DOCKER_COMPOSE) down
+	@echo "Integration tests completed successfully!"
