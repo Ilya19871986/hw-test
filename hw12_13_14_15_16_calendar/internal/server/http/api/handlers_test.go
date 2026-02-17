@@ -11,6 +11,7 @@ import (
 
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/app"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/logger"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/metrics"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -29,8 +30,11 @@ func TestBasicFunctionality(t *testing.T) {
 	// Создаем приложение
 	app := app.New(testLogger, mockStorage)
 
+	// Создаем метрики
+	testMetrics := metrics.NewMetrics()
+
 	// Создаем сервер
-	server := NewServer(app)
+	server := NewServer(app, testMetrics)
 
 	// Тест создания события
 	eventReq := CreateEventRequest{
