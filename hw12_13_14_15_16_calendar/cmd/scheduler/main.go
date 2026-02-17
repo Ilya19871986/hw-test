@@ -12,6 +12,7 @@ import (
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/app"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/config"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/logger"
+	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/metrics"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/mq/kafka"
 	"github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage"
 	memory "github.com/Ilya19871986/hw-test/hw12_13_14_15_16_calendar/internal/storage/memory"
@@ -62,7 +63,8 @@ func main() {
 	logg.Info("Successfully connected to Kafka")
 
 	calendarApp := app.New(logg, store)
-	scheduler := app.NewScheduler(calendarApp, producer, logg, cfg.Scheduler)
+	metricsInstance := metrics.NewMetrics()
+	scheduler := app.NewScheduler(calendarApp, producer, logg, cfg.Scheduler, metricsInstance)
 
 	// Graceful shutdown
 	mainCtx, mainCancel := context.WithCancel(context.Background())
