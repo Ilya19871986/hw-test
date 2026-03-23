@@ -9,10 +9,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type User struct {
-	Email string `json:"Email"`
-}
-
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
